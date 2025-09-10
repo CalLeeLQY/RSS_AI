@@ -96,39 +96,8 @@ def print_rss_summary(rss_data: Dict[str, Any]) -> None:
     print(f"更新时间: {feed_info['updated']}")
     print(f"文章总数: {feed_info['total_entries']}")
     
-    def _get_day_from_str(date_str: str) -> Any:
-        if not date_str:
-            return None
-        fmts = [
-            "%a, %d %b %Y %H:%M:%S %z",
-            "%a, %d %b %Y %H:%M:%S %Z",
-            "%Y-%m-%d %H:%M:%S %z",
-            "%Y-%m-%d %H:%M:%S",
-        ]
-        for f in fmts:
-            try:
-                return datetime.strptime(date_str, f).day
-            except Exception:
-                continue
-        # 简单兜底：匹配类似 "-09-" 或者 ", 09 " 这样的日
-        m = re.search(r"[\-,\s](\d{1,2})[\s,]", date_str)
-        if m:
-            try:
-                return int(m.group(1))
-            except Exception:
-                return None
-        return None
-
-    print(f"\n=== 最新文章（仅显示日期为9号）===")
-    filtered = []
-    for a in articles:
-        day = a.get('published_day')
-        if day is None:
-            day = _get_day_from_str(a.get('published', '')) or _get_day_from_str(a.get('updated', ''))
-        if day == 9:
-            filtered.append(a)
-
-    for i, article in enumerate(filtered[:5], 1):  # 只显示前5篇文章（过滤后）
+    print(f"\n=== 最新文章（前5条）===")
+    for i, article in enumerate(articles[:5], 1):  # 只显示每源前5篇文章
         print(f"\n{i}. {article['title']}")
         print(f"   链接: {article['link']}")
         print(f"   发布时间: {article['published']}")
@@ -216,8 +185,8 @@ if __name__ == "__main__":
         #"Crunchbase News": "https://news.crunchbase.com/feed",
         "MIT Tech Review - AI": "https://www.technologyreview.com/topic/artificial-intelligence/feed/",
         "PrNewswire Telecomm­unications": "https://www.prnewswire.com/rss/telecommunications-latest-news/telecommunications-latest-news-list.rss",
-        "PrNewswire Consumer Technology": "https://www.prnewswire.com/rss/consumer-technology-latest-news/consumer-technology-latest-news-list.rss",
-        "PrNewswire Business Technology": "https://www.prnewswire.com/rss/business-technology-latest-news/business-technology-latest-news-list.rss",
+        #"PrNewswire Consumer Technology": "https://www.prnewswire.com/rss/consumer-technology-latest-news/consumer-technology-latest-news-list.rss",
+        #"PrNewswire Business Technology": "https://www.prnewswire.com/rss/business-technology-latest-news/business-technology-latest-news-list.rss",
 
     }
     
