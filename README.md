@@ -64,8 +64,21 @@ python rss_get.py
 - 选择分类：在 `rss_get.py` 末尾处，有 `test_categories` 字典与 `selected_category` 变量。
   - 将 `selected_category` 修改为你希望测试的分类，例如：`"人工智能"`、`"中文科技媒体"`、`"新闻"` 等。
 - 新增 RSS 源：在相应的分类字典中追加 `名称: 链接` 键值对即可。
-- 展示逻辑：默认展示每个源的前 5 条最新内容。你可以在函数 `print_rss_summary` 中调整：
-  - 修改 `articles[:5]` 为你希望显示的数量，或加入自定义过滤条件（如按关键字、时间范围等）。
+- 展示逻辑：默认展示每个源的前 5 条最新内容。你可以通过 `print_rss_summary(rss_data, target_day=None, max_items=5)` 调整：
+  - `target_day`: 可选，按日期日号（1-31）过滤；`None` 表示不过滤。
+  - `max_items`: 可选，控制每源显示条数；`None` 或不传表示默认 5。
+
+示例：
+```python
+# 不按日期过滤，显示每源前 5 条（默认行为）
+print_rss_summary(rss_data)
+
+# 仅显示发布日期为 9 号的前 10 条
+print_rss_summary(rss_data, target_day=9, max_items=10)
+
+# 不按日期过滤，仅显示前 3 条
+print_rss_summary(rss_data, max_items=3)
+```
 
 ---
 

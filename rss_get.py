@@ -1,6 +1,6 @@
 import feedparser
 import requests
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from datetime import datetime
 import re
 
@@ -74,12 +74,14 @@ def get_rss_content(rss_url: str) -> Dict[str, Any]:
         }
 
 
-def print_rss_summary(rss_data: Dict[str, Any]) -> None:
+def print_rss_summary(rss_data: Dict[str, Any], target_day: Optional[int] = None, max_items: Optional[int] = 5) -> None:
     """
     打印RSS摘要信息
     
     Args:
         rss_data (Dict[str, Any]): get_rss_content函数返回的数据
+        target_day (Optional[int]): 目标日期（日号1-31）。为空则不按日期过滤。
+        max_items (Optional[int]): 每个源打印的最大条目数。为空则默认5。
     """
     if rss_data['status'] == 'error':
         print(f"错误: {rss_data['error']}")
@@ -96,8 +98,43 @@ def print_rss_summary(rss_data: Dict[str, Any]) -> None:
     print(f"更新时间: {feed_info['updated']}")
     print(f"文章总数: {feed_info['total_entries']}")
     
-    print(f"\n=== 最新文章（前5条）===")
-    for i, article in enumerate(articles[:5], 1):  # 只显示每源前5篇文章
+    def _get_day_from_str(date_str: str) -> Any:
+        if not date_str:
+            return None
+        fmts = [
+            "%a, %d %b %Y %H:%M:%S %z",
+            "%a, %d %b %Y %H:%M:%S %Z",
+            "%Y-%m-%d %H:%M:%S %z",
+            "%Y-%m-%d %H:%M:%S",
+        ]
+        for f in fmts:
+            try:
+                return datetime.strptime(date_str, f).day
+            except Exception:
+                continue
+        m = re.search(r"[\-,\s](\d{1,2})[\s,]", date_str)
+        if m:
+            try:
+                return int(m.group(1))
+            except Exception:
+                return None
+        return None
+
+    # 过滤逻辑：按 target_day（如提供）过滤，否则不过滤
+    if target_day is not None:
+        filtered: List[Dict[str, Any]] = []
+        for a in articles:
+            day = a.get('published_day')
+            if day is None:
+                day = _get_day_from_str(a.get('published', '')) or _get_day_from_str(a.get('updated', ''))
+            if day == target_day:
+                filtered.append(a)
+    else:
+        filtered = articles
+
+    count = max_items if max_items is not None else 5
+    print(f"\n=== 最新文章（前{count}条{'' if target_day is None else f'｜仅日期为 {target_day} 号'}）===")
+    for i, article in enumerate(filtered[:count], 1):
         print(f"\n{i}. {article['title']}")
         print(f"   链接: {article['link']}")
         print(f"   发布时间: {article['published']}")
